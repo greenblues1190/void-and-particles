@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+	<title>Void and Particles</title>
+	<script type="text/javascript" src="dist/paper-full.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.12/howler.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script type="text/paperscript" canvas="myCanvas">
+	
+	
+	var viewCenter = view.center;
+	
+	var keyData = {
+		a: {
+			sound: new Howl({
+	  			src: ['assets/sounds/e4.wav']
+			}),
+			color: '#f1c40f'
+		},
+		s: {
+			sound: new Howl({
+	  			src: ['assets/sounds/d4.wav']
+			}),
+			color: '#e67e22'
+		},
+		d: {
+			sound: new Howl({
+	  			src: ['assets/sounds/fsharp3.wav']
+			}),
+			color: '#e74c3c'
+		},
+		f: {
+			sound: new Howl({
+	  			src: ['assets/sounds/g4.wav']
+			}),
+			color: '#95a5a6'
+		},
+		g: {
+			sound: new Howl({
+	  			src: ['assets/sounds/a4.wav']
+			}),
+			color: '#f39c12'
+		},
+		h: {
+			sound: new Howl({
+	  			src: ['assets/sounds/csharp3.wav']
+			}),
+			color: '#d35400'
+		},
+		j: {
+			sound: new Howl({
+	  			src: ['assets/sounds/fsharp4.wav']
+			}),
+			color: '#1abc9c'
+		},
+		k: {
+			sound: new Howl({
+	  			src: ['assets/sounds/a3.wav']
+			}),
+			color: '#2ecc71'
+		},
+		l: {
+			sound: new Howl({
+	  			src: ['assets/sounds/b4.wav']
+			}),
+			color: '#3498db'
+		}
+	}
+
+	var atmos = new Howl({
+		src: ['assets/sounds/atmos.mp3'],
+		loop: true,
+		preload: true,
+		html5: true,
+		volume: 0.7
+	});
+	// Clear listener after first call.
+	atmos.once('load', function(){
+	  console.log('atmos loaded');
+	});
+	
+	
+	
+	var circles = [];
+	var maxSize = 80;
+	
+	var bgmplay = 0;
+
+	var squaresLayer = new Layer();
+	
+    var blkSquare = new Path.Rectangle({
+	    position: view.center,
+        size: 2000,
+        fillColor: 'black'
+	});
+	var whtSquare = new Path.Rectangle({
+	    position: view.center,
+        size: 2000,
+        fillColor: 'white'
+	});
+	
+	
+	var currentSquare = whtSquare; 
+
+	var instruction = new PointText({
+        position: view.center + [0, 7],
+        fillColor: 'black',
+        justification: 'center',
+		fontSize: 20,
+		content: 'Press any Key on keyline [A-L] to Start'
+	});
+
+	var circlesLayer = new Layer();
+
+	var firstEvent = 1;
+	var gameflag = 0;
+
+	function onKeyDown(event) {
+		if (keyData[event.key]){
+			var maxPoint = new Point(view.size.width, view.size.height);
+			var randomPoint = Point.random();
+			var point = maxPoint * randomPoint;
+			var newCircle = new Path.Circle(point, maxSize * Math.random() + 10);
+			newCircle.fillColor = keyData[event.key].color;
+			//newCircle.fillColor = 'white';
+			keyData[event.key].sound.play();
+			circles.push(newCircle);
+
+			if (gameflag == 0) {
+				gameflag = 1;
+			}
+		}
+	}
+
+	//circlesLayer.blendMode = 'exclusion';
+
+	function onFrame(event){
+		if (gameflag == 1) {
+			if (bgmplay == 0) {
+				atmos.play();
+				bgmplay = 1;
+			}
+			if (instruction && instruction.opacity >= 0.005) {
+				instruction.opacity -= 0.005;
+			}
+			else {
+				instruction.remove();
+			}
+			if (currentSquare.area < 10000000) {
+				currentSquare.scale(1.01);
+			}
+			else {
+				if (currentSquare == blkSquare) {
+					squaresLayer.insertChild(0, blkSquare);
+					whtSquare.scale(0.0005);
+					currentSquare = whtSquare;
+					console.log("change to white");
+				}
+				else {
+					squaresLayer.insertChild(0, whtSquare);
+					blkSquare.scale(0.0005);
+					currentSquare = blkSquare;
+					console.log("change to black");
+					
+				}
+			
+			}
+
+
+			for(var i = 0; i < circles.length; i++){
+				circles[i].fillColor.brightness -= 0.001;
+				circles[i].scale(.975, viewCenter);
+				if (circles[i].area < 1){
+					circles[i].remove();
+					circles.splice(i,1);
+					i--;
+				}
+			}
+		}
+	}
+
+	</script>
+</head>
+<body>
+	<canvas id="myCanvas" resize></canvas>
+</body>
+</html>
