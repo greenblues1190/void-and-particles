@@ -74,7 +74,7 @@
 		loop: true,
 		preload: true,
 		html5: true,
-		volume: 0.7
+		volume: 0.6
 	});
 	// Clear listener after first call.
 	atmos.once('load', function(){
@@ -123,8 +123,8 @@
 			var randomPoint = Point.random();
 			var point = maxPoint * randomPoint;
 			var newCircle = new Path.Circle(point, maxSize * Math.random() + 10);
-			newCircle.fillColor = keyData[event.key].color;
-			//newCircle.fillColor = 'white';
+			//newCircle.fillColor = keyData[event.key].color;
+			newCircle.fillColor = 'white';
 			keyData[event.key].sound.play();
 			circles.push(newCircle);
 
@@ -134,7 +134,7 @@
 		}
 	}
 
-	//circlesLayer.blendMode = 'exclusion';
+	circlesLayer.blendMode = 'exclusion';
 
 	function onFrame(event){
 		if (gameflag == 1) {
