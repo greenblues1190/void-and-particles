@@ -9,6 +9,9 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<script type="text/paperscript" canvas="myCanvas">
 	
+	
+	var viewCenter = view.center;
+	
 	var keyData = {
 		a: {
 			sound: new Howl({
@@ -68,12 +71,21 @@
 
 	var atmos = new Howl({
 		src: ['assets/sounds/atmos.mp3'],
-		loop: true
+		loop: true,
+		preload: true,
+		html5: true,
+		volume: 0.6
 	});
+	// Clear listener after first call.
+	atmos.once('load', function(){
+	  console.log('atmos loaded');
+	});
+	
+	
 	
 	var circles = [];
 	var maxSize = 100;
-	var viewCenter = view.center;
+	
 	var bgmplay = 0;
 
 	var squaresLayer = new Layer();
@@ -91,7 +103,19 @@
 	});
 	
 	var currentSquare = blkSquare; 
+
+	var instruction = new PointText({
+        position: view.center + [0, 7],
+        fillColor: 'white',
+        justification: 'center',
+		fontSize: 20,
+		content: 'Press Any Key to Start'
+	});
+
 	var circlesLayer = new Layer();
+
+	var firstEvent = 1;
+	var gameflag = 0;
 
 	function onKeyDown(event) {
 		if (keyData[event.key]){
@@ -103,44 +127,55 @@
 			//newCircle.fillColor = 'black';
 			keyData[event.key].sound.play();
 			circles.push(newCircle);
+
+			if (gameflag == 0) {
+				gameflag = 1;
+			}
 		}
 	}
 
 	function onFrame(event){
-		if (currentSquare.area < 10000000) {
-			currentSquare.scale(1.01);
-		}
-		else {
-			if (currentSquare == blkSquare) {
-				squaresLayer.insertChild(0, blkSquare);
-				whtSquare.scale(0.0005);
-				currentSquare = whtSquare;
-				console.log("change to white");
+		if (gameflag == 1) {
+			if (instruction && instruction.opacity >= 0.005) {
+				instruction.opacity -= 0.005;
 			}
 			else {
-				squaresLayer.insertChild(0, whtSquare);
-				blkSquare.scale(0.0005);
-				currentSquare = blkSquare;
-				console.log("change to black");
-				if (bgmplay == 0) {
-					atmos.play();
-					bgmplay = 1;
+				instruction.remove();
+			}
+			if (currentSquare.area < 10000000) {
+				currentSquare.scale(1.01);
+			}
+			else {
+				if (currentSquare == blkSquare) {
+					squaresLayer.insertChild(0, blkSquare);
+					whtSquare.scale(0.0005);
+					currentSquare = whtSquare;
+					console.log("change to white");
+				}
+				else {
+					squaresLayer.insertChild(0, whtSquare);
+					blkSquare.scale(0.0005);
+					currentSquare = blkSquare;
+					console.log("change to black");
+					if (bgmplay == 0) {
+						atmos.play();
+						bgmplay = 1;
+					}
+				}
+			
+			}
+
+
+			for(var i = 0; i < circles.length; i++){
+				circles[i].fillColor.brightness -= 0.002;
+				circles[i].scale(.97, viewCenter);
+				if (circles[i].area < 1){
+					circles[i].remove();
+					circles.splice(i,1);
+					i--;
 				}
 			}
-			
 		}
-		
-
-		for(var i = 0; i < circles.length; i++){
-			circles[i].fillColor.brightness -= 0.002;
-			circles[i].scale(.97, viewCenter);
-			if (circles[i].area < 1){
-				circles[i].remove();
-				circles.splice(i,1);
-				i--;
-			}
-		}
-		
 	}
 
 	</script>
