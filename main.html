@@ -66,32 +66,32 @@
 		}
 	}
 
-	//var ambience = new Howl({	src: ['assets/sounds/atmos.mp3'],	loop: true});
-
-	//ambience.play();
+	var atmos = new Howl({
+		src: ['assets/sounds/atmos.mp3'],
+		loop: true
+	});
 	
 	var circles = [];
 	var maxSize = 100;
 	var viewCenter = view.center;
-
+	var bgmplay = 0;
 
 	var squaresLayer = new Layer();
 	
-    var blkSquare = new Path.Rectangle({
-	    position: view.center,
-        size: 2000,
-        fillColor: 'black'
-	});
+    
 	var whtSquare = new Path.Rectangle({
 	    position: view.center,
         size: 2000,
         fillColor: 'white'
 	});
+	var blkSquare = new Path.Rectangle({
+	    position: view.center,
+        size: 2000,
+        fillColor: 'black'
+	});
 	
-	var currentSquare = whtSquare; 
+	var currentSquare = blkSquare; 
 	var circlesLayer = new Layer();
-
-	
 
 	function onKeyDown(event) {
 		if (keyData[event.key]){
@@ -122,12 +122,17 @@
 				blkSquare.scale(0.0005);
 				currentSquare = blkSquare;
 				console.log("change to black");
+				if (bgmplay == 0) {
+					atmos.play();
+					bgmplay = 1;
+				}
 			}
+			
 		}
 		
 
 		for(var i = 0; i < circles.length; i++){
-			circles[i].fillColor.brightness += 0.005;
+			circles[i].fillColor.brightness -= 0.002;
 			circles[i].scale(.97, viewCenter);
 			if (circles[i].area < 1){
 				circles[i].remove();
