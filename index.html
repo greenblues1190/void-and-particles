@@ -203,7 +203,7 @@
 			if (loadItem > 0) {
 				return;
 			}
-			
+
 			if (bgmplay == 0) {
 				atmos1.play();
 				bgmplay = 1;
@@ -331,7 +331,14 @@
 				instruction.content = 'Loading.. (' + (11 - loadItem) + '/11)';
 			}
 			else if (gameflag == 0) {
-				instruction.content = 'Touch the screen or press any key on keyline [A-L] to start\nPress spacebar to change mode';
+				if (/Mobi|Android/i.test(navigator.userAgent)) {
+					// mobile
+					instruction.content = 'Touch the screen';
+				}
+				else {
+					// pc
+					instruction.content = 'Click or press any key on keyline [A-L] to start\nPress spacebar to change mode';
+				}
 			}
 			if (gameflag == 1) {
 				
