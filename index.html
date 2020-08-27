@@ -11,69 +11,64 @@
 		
 		
 		var viewCenter = view.center;
+		var sounds = [
+			new Howl({src: 'assets/sounds/e4.wav'}),
+			new Howl({src: 'assets/sounds/d4.wav'}),
+			new Howl({src: 'assets/sounds/fsharp3.wav'}),
+			new Howl({src: 'assets/sounds/g4.wav'}),
+			new Howl({src: 'assets/sounds/a4.wav'}),
+			new Howl({src: 'assets/sounds/csharp3.wav'}),
+			new Howl({src: 'assets/sounds/fsharp4.wav'}),
+			new Howl({src: 'assets/sounds/a3.wav'}),
+			new Howl({src: 'assets/sounds/b4.wav'})
+		];
+		for (var i = 0; i < sounds.length; i++) {
+			sounds[i].preload = true;
+		}
+
+		/*
+		var sounds = new Howl({
+			src: ['assets/sounds/e4.wav', 'assets/sounds/d4.wav', 'assets/sounds/fsharp3.wav', 'assets/sounds/g4.wav', 'assets/sounds/a4.wav', 
+			'assets/sounds/csharp3.wav', 'assets/sounds/fsharp4.wav', 'assets/sounds/a3.wav', 'assets/sounds/b4.wav'],
+			preload: true
+		});
+		*/
 
 		var keyData = {
 			a: {
-				sound: new Howl({
-					src: ['assets/sounds/e4.wav'],
-					preload: true
-				}),
+				sound: sounds[0],
 				color: '#f1c40f'
 			},
 			s: {
-				sound: new Howl({
-					src: ['assets/sounds/d4.wav'],
-					preload: true
-				}),
+				sound: sounds[1],
 				color: '#e67e22'
 			},
 			d: {
-				sound: new Howl({
-					src: ['assets/sounds/fsharp3.wav'],
-					preload: true
-				}),
+				sound: sounds[2],
 				color: '#e74c3c'
 			},
 			f: {
-				sound: new Howl({
-					src: ['assets/sounds/g4.wav'],
-					preload: true
-				}),
+				sound: sounds[3],
 				color: '#95a5a6'
 			},
 			g: {
-				sound: new Howl({
-					src: ['assets/sounds/a4.wav'],
-					preload: true
-				}),
+				sound: sounds[4],
 				color: '#f39c12'
 			},
 			h: {
-				sound: new Howl({
-					src: ['assets/sounds/csharp3.wav'],
-					preload: true
-				}),
+				sound: sounds[5],
 				color: '#d35400'
 			},
 			j: {
-				sound: new Howl({
-					src: ['assets/sounds/fsharp4.wav'],
-					preload: true
-				}),
+				sound: sounds[6],
 				color: '#1abc9c'
 			},
 			k: {
-				sound: new Howl({
-					src: ['assets/sounds/a3.wav'],
-					preload: true
-				}),
+				sound: sounds[7],
 				color: '#2ecc71'
 			},
 			l: {
-				sound: new Howl({
-					src: ['assets/sounds/b4.wav'],
-					preload: true
-				}),
+				sound: sounds[8],
 				color: '#3498db'
 			}
 		}
@@ -90,7 +85,7 @@
 			loop: true,
 			preload: true,
 			html5: true,
-			volume: 0.9
+			volume: 1.0
 		});
 
 		// Clear listener after first call.
@@ -102,9 +97,11 @@
 		});
 		
 		
-		function circle(circlePath, color) {
+		function circle(circlePath, color, distance, position) {
 			this.circlePath = circlePath;
 			this.color = color;
+			this.distance = distance;
+			this.pos = position;
 		}
 		var circles = [];
 		var maxSize = 80;
@@ -138,7 +135,34 @@
 
 		var firstEvent = 1;
         var gameflag = 0;
-        var bwmode = 0;
+		var bwmode = 0;
+		var speed = 0.97;
+		var squareSpeed = 1.01;
+		
+		function getTrueDistance(circle1, circle2, maxDistance) {
+			var center1 = circle1.circlePath.position;
+			var center2 = circle2.circlePath.position;
+			var radius1 = circle1.circlePath.bounds.width / 2;
+            var radius2 = circle2.circlePath.bounds.width / 2;
+			var a = circle1.pos.getDistance(circle2.pos);
+			var b = circle2.distance - circle1.distance;
+			var d = Math.sqrt(a*a + b*b);
+			if (radius1 == 0 || radius2 == 0) {
+				return -1;
+			}
+			if (d > maxDistance) {
+				return -1;
+			}
+			if (center1.getDistance(center2) <= Math.abs(radius1 - radius2)) {
+				return -1;
+			}
+
+			return {
+				center1: center1,
+				center2: center2,
+				distance: d
+			};
+		}
 
 		function onKeyDown(event) {
 			console.log('key code: ' + event.key);
@@ -153,15 +177,18 @@
 				var point = maxPoint * randomPoint;
 				var newCircle = new circle(
 					new Path.Circle(point, maxSize * Math.random() + 10),
-					keyData[event.key].color
+					keyData[event.key].color,
+					800,
+					point
 				);
 				if (bwmode == 0) {
 					newCircle.circlePath.fillColor = keyData[event.key].color;
+					keyData[event.key].sound.play();
 				}
 				else {
 					newCircle.circlePath.fillColor = 'white';
 				}
-				keyData[event.key].sound.play();
+				
 				circles.push(newCircle);
 
 				if (gameflag == 0) {
@@ -175,6 +202,13 @@
 					circlesLayer.fillColor = 'white';
 					atmos1.pause();
 					atmos2.play();
+					for (var i = 0; i < sounds.length; i++) {
+						sounds[i].stop();
+					}
+					blkSquare.fillColor = 'white';
+					whtSquare.fillColor = 'black';
+					speed = 0.987;
+					squareSpeed = 1.003;
                 }
                 else {
                     bwmode = 0;
@@ -184,10 +218,15 @@
 					}
 					atmos2.stop();
 					atmos1.play();
+					blkSquare.fillColor = 'black';
+					whtSquare.fillColor = 'white';
+					speed = 0.97;
+					squareSpeed = 1.01;
                 }
 			}
 		}
-
+		var connections = new Group();
+		var connectedList = [];
 		function onFrame(event){
 			if (gameflag == 1) {
 				
@@ -198,7 +237,7 @@
 					instruction.remove();
 				}
 				if (currentSquare.area < 10000000) {
-					currentSquare.scale(1.01);
+					currentSquare.scale(squareSpeed);
 				}
 				else {
 					if (currentSquare == blkSquare) {
@@ -216,17 +255,40 @@
 					}
 				
 				}
-				
-				for(var i = 0; i < circles.length; i++){
-					circles[i].circlePath.fillColor.brightness -= 0.001;
-					circles[i].circlePath.scale(.97, viewCenter);
-					
-					if (circles[i].circlePath.area < 1){
-						circles[i].circlePath.remove();
-						circles.splice(i,1);
-						i--;
-					}	
-                }
+				connections.removeChildren();
+					for(var i = 0; i < circles.length; i++){
+						circles[i].circlePath.fillColor.brightness -= 0.001;
+						circles[i].circlePath.scale(speed, viewCenter);
+						circles[i].distance -= 4;
+						if (circles[i].circlePath.area < 1){
+							circles[i].circlePath.remove();
+							circles.splice(i,1);
+							i--;
+						}	
+					}
+				if (bwmode == 1) {
+					for (var i = 0; i < circles.length; i++) {
+						for (var j = i + 1; j < circles.length; j++) {
+							var centerPoint = getTrueDistance(circles[i], circles[j], 250);
+							if (centerPoint != -1) {
+								connectedList.push(centerPoint);
+							}
+						}
+						connectedList.sort(function(a,b) {
+							return a.distance - b.distance;
+						});
+						for (var k = 0; k < 2 && k < connectedList.length; k++) {
+							var connectedLine = connectedList.pop();
+							var newLine = new Path.Line(connectedLine.center1, connectedLine.center2);
+							newLine.strokeColor = 'white';
+							connections.appendTop(newLine);
+						}
+
+						for (var k = 0; k < connectedList.length; k++) {
+							connectedList.pop();
+						}
+					}
+				}
 			}
 		}
 
