@@ -11,6 +11,8 @@
 		
 		
 		var viewCenter = view.center;
+		var loadItem = 11;
+
 		var sounds = [
 			new Howl({src: 'assets/sounds/e4.wav'}),
 			new Howl({src: 'assets/sounds/d4.wav'}),
@@ -74,7 +76,7 @@
 				color: '#3498db'
 			}
 		}
-
+		
 		var atmos1 = new Howl({
 			src: ['assets/sounds/atmos1.mp3'],
 			loop: true,
@@ -90,14 +92,41 @@
 			volume: 1.0
 		});
 
+
 		// Clear listener after first call.
-		atmos1.once('load', function(){
-		console.log('atmos1 loaded');
+		atmos1.once('load', function() {
+			loadItem--;
 		});
-		atmos2.once('load', function(){
-			console.log('atmos2 loaded');
+		atmos2.once('load', function() {
+			loadItem--;
 		});
-		
+		sounds[0].once('load', function() {
+			loadItem--;
+		});
+		sounds[1].once('load', function() {
+			loadItem--;
+		});
+		sounds[2].once('load', function() {
+			loadItem--;
+		});
+		sounds[3].once('load', function() {
+			loadItem--;
+		});
+		sounds[4].once('load', function() {
+			loadItem--;
+		});
+		sounds[5].once('load', function() {
+			loadItem--;
+		});
+		sounds[6].once('load', function() {
+			loadItem--;
+		});
+		sounds[7].once('load', function() {
+			loadItem--;
+		});
+		sounds[8].once('load', function() {
+			loadItem--;
+		});
 		
 		function circle(circlePath, color, distance, position) {
 			this.circlePath = circlePath;
@@ -122,7 +151,6 @@
 			fillColor: 'white'
 		});
 		
-		
 		var currentSquare = whtSquare; 
 
 		var instruction = new PointText({
@@ -130,8 +158,13 @@
 			fillColor: 'black',
 			justification: 'center',
 			fontSize: 20,
-			content: 'Touch the screen or press any key on keyline [A-L] to start\nPress spacebar to change mode'
+			content: 'Loading.. (0/11)'
 		});
+
+		while(loadItem == 0) {
+			
+			update();
+		}
 
 		var circlesLayer = new Layer();
 
@@ -167,6 +200,10 @@
 		}
 
 		function onMouseDown(event) {
+			if (loadItem > 0) {
+				return;
+			}
+			
 			if (bgmplay == 0) {
 				atmos1.play();
 				bgmplay = 1;
@@ -228,7 +265,7 @@
 		function onKeyDown(event) {
 			console.log('key code: ' + event.key);
 			
-			if (keyData[event.key]){
+			if (keyData[event.key] && loadItem == 0){
 				if (bgmplay == 0) {
 					atmos1.play();
 					bgmplay = 1;
@@ -290,6 +327,12 @@
 		var connections = new Group();
 		var connectedList = [];
 		function onFrame(event){
+			if (loadItem > 0) {
+				instruction.content = 'Loading.. (' + (11 - loadItem) + '/11)';
+			}
+			else if (gameflag == 0) {
+				instruction.content = 'Touch the screen or press any key on keyline [A-L] to start\nPress spacebar to change mode';
+			}
 			if (gameflag == 1) {
 				
 				if (instruction && instruction.opacity >= 0.005) {
