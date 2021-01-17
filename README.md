@@ -1,4 +1,4 @@
-# Patatap-Clone
+# Void and Particles
 Interective media study
 
 You can run this [here](https://voidandparticles.herokuapp.com/).
