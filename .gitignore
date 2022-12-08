@@ -4,5 +4,7 @@ node_modules
 /.DS_Store
 
 npm-debug.log*
+yarn-debulg.log*
+yarn-error.log*
 
 .vscode
